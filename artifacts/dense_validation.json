@@ -1,0 +1,94 @@
+{
+  "validated_at_utc": "2026-11-20T17:57:51.188362+00:00",
+  "config": {
+    "dimension": 1024,
+    "image_mode": "RGB",
+    "inference_dtype": "bfloat16",
+    "model": "google/siglip2-large-patch16-384",
+    "normalize": "l2",
+    "processor_use_fast": true,
+    "revision": "1b426889ea62b5a72bf9839009a1b184bfc9c178",
+    "schema_version": 1,
+    "storage_dtype": "<f4",
+    "text_lowercase": true,
+    "text_max_length": 64,
+    "text_padding": "max_length",
+    "text_truncation": true,
+    "transformers_version": "5.15.0"
+  },
+  "image_count": 5000,
+  "manifest_matching_count": 5000,
+  "distinct_image_hashes": 4968,
+  "matrix_shape": [
+    5000,
+    1024
+  ],
+  "all_vectors_finite": true,
+  "stored_l2_norm_min": 0.9999998807907104,
+  "stored_l2_norm_max": 1.0000001192092896,
+  "sqlite_integrity_check": "ok",
+  "bm25_count": 5000,
+  "database_size_bytes": 23646208,
+  "query_smoke_tests": [
+    {
+      "query": "a person washing dishes at the sink",
+      "results": [
+        {
+          "imageID": "day1_Kitchen_15_2308",
+          "file_path": "Batch2/Batch2/15_2308.jpg",
+          "cosine_score": 0.11771732568740845
+        },
+        {
+          "imageID": "day1_Kitchen_15_2258",
+          "file_path": "Batch2/Batch2/15_2258.jpg",
+          "cosine_score": 0.10658469796180725
+        },
+        {
+          "imageID": "day1_Kitchen_14_1443",
+          "file_path": "Batch1/14_1443.jpg",
+          "cosine_score": 0.1053425520658493
+        },
+        {
+          "imageID": "day1_Kitchen_14_1525",
+          "file_path": "Batch1/14_1525.jpg",
+          "cosine_score": 0.10479534417390823
+        },
+        {
+          "imageID": "day1_Kitchen_15_2339",
+          "file_path": "Batch2/Batch2/15_2339.jpg",
+          "cosine_score": 0.10475890338420868
+        }
+      ]
+    },
+    {
+      "query": "người mặc áo đỏ đứng trong bếp",
+      "results": [
+        {
+          "imageID": "day1_Kitchen_18_300",
+          "file_path": "Batch1/18_300.jpg",
+          "cosine_score": 0.12551218271255493
+        },
+        {
+          "imageID": "day1_Kitchen_15_2351",
+          "file_path": "Batch2/Batch2/15_2351.jpg",
+          "cosine_score": 0.12317363172769547
+        },
+        {
+          "imageID": "day1_Kitchen_14_3148",
+          "file_path": "Batch1/14_3148.jpg",
+          "cosine_score": 0.12227648496627808
+        },
+        {
+          "imageID": "day1_Kitchen_16_1293",
+          "file_path": "Batch1/16_1293.jpg",
+          "cosine_score": 0.12202341854572296
+        },
+        {
+          "imageID": "day1_Kitchen_18_1029",
+          "file_path": "Batch1/18_1029.jpg",
+          "cosine_score": 0.12156227231025696
+        }
+      ]
+    }
+  ]
+}
