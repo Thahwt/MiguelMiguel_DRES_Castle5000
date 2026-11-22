@@ -2,6 +2,8 @@ __pycache__/
 *.py[cod]
 .venv/
 .env
+artifacts/qa_draft*.json
+artifacts/dres_history*.jsonl
 artifacts/*.tmp
 artifacts/hf_cache/
 artifacts/*.sqlite*

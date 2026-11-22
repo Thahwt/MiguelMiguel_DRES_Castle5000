@@ -1,7 +1,7 @@
 # Castle5000: dataset manifest
 
-Pipeline hiện có: quét ảnh, tạo manifest, VLM caption, tìm kiếm BM25 trên caption
-và dense retrieval ảnh bằng SigLIP 2 Large. Chưa có giao diện hay nộp bài DRES.
+Pipeline hiện có: quét ảnh, tạo manifest, VLM caption, tìm kiếm hybrid BM25 trên
+caption + SigLIP 2 Large, baseline QA thủ công và notebook client nộp KIS/QA lên DRES.
 
 ## Cài đặt và chạy
 
@@ -293,3 +293,77 @@ Notebook hiển thị top 10 ảnh trong lưới 2 cột, kèm ID, đường d�
   dùng checkpoint từ cache và không sửa ảnh gốc. Output mẫu được lưu sẵn.
 - Nếu môi trường chưa có kernel: `python -m pip install ipykernel` sau khi
   kích hoạt `legalqa`; các dependencies còn lại ở `requirements-dense.txt`.
+
+## Baseline QA thủ công và client DRES
+
+Cài dependencies giao diện/client trong môi trường dùng để mở notebook:
+
+```powershell
+conda activate legalqa
+python -m pip install -r requirements-client.txt
+```
+
+`requirements-client.txt` bổ sung requests, ipywidgets và ipykernel; phần retrieval
+vẫn dùng `requirements-dense.txt` đã cài. Chọn kernel `legalqa` cho cả hai notebook.
+
+### 1. Tìm bằng chứng và tự trả lời
+
+Trong `hybrid_retrieval.ipynb`, chạy retrieval như trước. Query nên mô tả ngữ cảnh
+cần tìm, ví dụ `person next to refrigerator`; không đoán màu áo nếu câu hỏi hỏi màu.
+Caption hiện bằng tiếng Anh, nên ưu tiên từ khóa tiếng Anh cho nhánh BM25.
+
+Chạy ô **Baseline QA** ở cuối notebook. Điền câu hỏi gốc, tên task nếu đã biết,
+chọn một ảnh trong top hybrid và tự nhập đáp án ngắn theo ngôn ngữ câu hỏi.
+Có thể xem ảnh lớn hoặc nhập crop `left,top,right,bottom` theo pixel ảnh gốc.
+Đổi ảnh bằng chứng sẽ xóa đáp án đang nhập để người dùng đọc lại ảnh.
+Nếu chưa thấy ảnh đúng, sửa query/tăng `TOP_K`, chạy lại retrieval rồi chạy lại
+ô panel QA để cập nhật danh sách ảnh.
+
+Bấm **Lưu bản nháp QA** để cập nhật `artifacts/qa_draft.json`. Bản nháp chứa câu
+hỏi, query, ảnh bằng chứng, hash và đáp án; không gọi DRES. Không có VLM sinh đáp án.
+
+### 2. Đăng nhập và nộp KIS/QA
+
+Mở `dres_submission.ipynb`; notebook này không nạp mô hình. Chạy ô khởi tạo rồi
+ô đăng nhập: nhập username và mật khẩu ẩn bằng `getpass`, hoặc dùng biến môi
+trường `DRES_USERNAME`, `DRES_PASSWORD` có sẵn trước khi mở Jupyter/VS Code.
+Không ghi tài khoản vào notebook. `DRES_URL` tùy chọn, mặc định là địa chỉ API
+trong PDF; notebook không tự đọc `.env`.
+
+Chạy ô giao diện rồi làm theo thứ tự:
+
+1. Bấm **Tải buổi thi**, chọn evaluation ACTIVE, bấm **Xem task hiện tại**.
+2. Đọc câu hỏi trên DRES Viewer và nhập đúng tên task đang chạy, ví dụ `QA01`.
+3. Chọn loại bài. QA: **Nạp bản nháp QA** hoặc tự nhập đáp án. KIS: dán imageID
+   hoặc tên file ảnh từ kết quả retrieval, có thể bấm **Xem ảnh KIS**.
+4. Bấm **Xem trước bài nộp**, đối chiếu evaluation, task và nội dung.
+5. Bấm **Nộp lên DRES** để gửi đúng một bài. Chạy tất cả các ô không tự gửi bài.
+
+QA chỉ gửi trường `text`; ảnh bằng chứng không đi vào payload. KIS dùng imageID
+đúng dạng `day1_Kitchen_HH_frame`, giữ số 0 đầu, collection `castle5000`.
+`202 INDETERMINATE` nghĩa là đã nhận và chờ trọng tài, không phải lỗi. Theo dõi
+kết quả chấm trên Viewer/bảng điểm; client chưa tự đồng bộ kết quả chấm.
+
+Client kiểm tra evaluation/task lại ngay trước POST. Nếu API trả tên/ID task,
+client chặn bài đã chuẩn bị cho task khác. Nếu chỉ trả loại task, cần người dùng
+đối chiếu tên task trên Viewer; vẫn có thể có thời điểm chuyển task giữa GET và POST.
+Bản nháp có thể thuộc task cũ: luôn kiểm tra lại câu hỏi trước khi nộp.
+
+### Lịch sử và lỗi mạng
+
+`artifacts/dres_history.jsonl` lưu mỗi lần thử cùng phản hồi, không lưu mật khẩu
+hay session. Bản nháp và lịch sử được bỏ qua bởi Git. Client chặn nộp lại cùng bài
+đã nhận hoặc chưa rõ kết quả, kể cả khi mở lại kernel. Chỉ một người phụ trách nộp
+và một client ghi file lịch sử tại một thời điểm.
+
+POST không tự retry. Timeout, lỗi kết nối hoặc lỗi máy chủ được ghi `UNKNOWN`:
+kiểm tra DRES trước khi quyết định bước tiếp theo, không xóa lịch sử để thử lại.
+HTTP 401: chạy lại ô đăng nhập và ô giao diện, sau đó xem trước bài lại.
+HTTP 400/404/412: đọc phản hồi để kiểm tra trạng thái task, evaluation, loại bài
+và bài trùng. Không dùng đáp án mẫu để thử trong lượt thi thật.
+
+Kiểm thử client dùng HTTP giả lập; không đăng nhập hoặc gửi bài lên DRES thật:
+
+```powershell
+python -m unittest discover -s tests -v
+```
